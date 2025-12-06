@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salón & Barbería - Satélite Norte</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Admin Discreto -->
+    <div class="admin-access" onclick="openAdminLogin()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+    </div>
+
+    <!-- Modal Login Admin -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAdminLogin()">&times;</span>
+            <h2>Acceso Administrador</h2>
+            <form id="adminLoginForm" onsubmit="loginAdmin(event)">
+                <input type="text" id="adminUser" placeholder="Usuario" required>
+                <input type="password" id="adminPass" placeholder="Contraseña" required>
+                <button type="submit">Ingresar</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Página Principal -->
+    <div id="mainPage">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Salón & Barbería</h1>
+                <p>Estilo y elegancia en Satélite Norte</p>
+                <button class="cta-button" onclick="showReservas()">RESERVAR AHORA</button>
+            </div>
+        </section>
+
+        <!-- Cards de Servicios -->
+        <section class="services">
+            <h2>Nuestros Servicios</h2>
+            <div class="cards-container">
+                <div class="card card-barberia">
+                    <div class="card-icon">🪒</div>
+                    <h3>Barbería</h3>
+                    <p>Cortes modernos, diseños y afeitado profesional</p>
+                </div>
+                <div class="card card-salon">
+                    <div class="card-icon">💇</div>
+                    <h3>Salón de Belleza</h3>
+                    <p>Cortes, tintes y tratamientos capilares</p>
+                </div>
+                <div class="card card-manicure">
+                    <div class="card-icon">💅</div>
+                    <h3>Manicure & Pedicure</h3>
+                    <p>Cuidado completo de manos y pies</p>
+                </div>
+                <div class="card card-tratamientos">
+                    <div class="card-icon">✨</div>
+                    <h3>Tratamientos</h3>
+                    <p>Alisado, keratina y más</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ubicación y Contacto -->
+        <section class="info">
+            <div class="info-box">
+                <h3>📍 Encuéntranos</h3>
+                <p>Satélite Norte, Warnes<br>Santa Cruz - Bolivia</p>
+                <button class="map-button" onclick="openMap()">Ver en Google Maps</button>
+            </div>
+            <div class="info-box">
+                <h3>📞 Contacto</h3>
+                <p>WhatsApp: +591 73138524</p>
+                <p>🕐 Domingo a Domingo<br>8:00 AM - 7:00 PM</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Página de Reservas -->
+    <div id="reservasPage" style="display: none;">
+        <button class="back-button" onclick="showMain()">← Volver</button>
+        
+        <div class="reservas-container">
+            <h2>Reserva tu Cita</h2>
+            
+            <!-- Calendario -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <button onclick="previousMonth()">←</button>
+                    <span id="currentMonth"></span>
+                    <button onclick="nextMonth()">→</button>
+                </div>
+                <div id="calendar" class="calendar-grid"></div>
+            </div>
+
+            <!-- Formulario de Reserva -->
+            <form id="reservaForm" onsubmit="submitReserva(event)">
+                <div class="form-group">
+                    <label>Fecha Seleccionada</label>
+                    <input type="text" id="fechaSeleccionada" readonly required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Servicio *</label>
+                    <select id="tipoServicio" onchange="updateServicios()" required>
+                        <option value="">Selecciona...</option>
+                        <option value="barberia">🪒 Barbería</option>
+                        <option value="salon">💇 Salón de Belleza</option>
+                        <option value="manicure">💅 Manicure/Pedicure</option>
+                        <option value="tratamientos">✨ Tratamientos Especiales</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Servicio Específico *</label>
+                    <select id="servicioEspecifico" required>
+                        <option value="">Primero selecciona el tipo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Profesional *</label>
+                    <select id="profesional" onchange="updateHorarios()" required>
+                        <option value="">Selecciona...</option>
+                        <option value="sin-preferencia">Sin preferencia</option>
+                        <option value="juan">Juan - Barbero</option>
+                        <option value="carlos">Carlos - Barbero</option>
+                        <option value="maria">María - Estilista</option>
+                        <option value="ana">Ana - Estilista</option>
+                        <option value="laura">Laura - Manicurista</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Horario Disponible *</label>
+                    <div id="horariosDisponibles" class="horarios-grid"></div>
+                    <input type="hidden" id="horarioSeleccionado" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="nombreCliente" required minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label>Teléfono/WhatsApp *</label>
+                    <input type="tel" id="telefonoCliente" required pattern="[0-9]{8,10}" placeholder="73138524">
+                </div>
+
+                <div class="form-group">
+                    <label>Email (Opcional)</label>
+                    <input type="email" id="emailCliente">
+                </div>
+
+                <div class="form-group">
+                    <label>Notas Adicionales (Opcional)</label>
+                    <textarea id="notasCliente" rows="3" placeholder="Alergias, preferencias, primera vez, etc."></textarea>
+                </div>
+
+                <div id="resumenReserva" class="resumen-box" style="display: none;">
+                    <h3>Resumen de tu Reserva</h3>
+                    <div id="resumenContent"></div>
+                </div>
+
+                <div class="form-buttons">
+                    <button type="button" onclick="showMain()">Cancelar</button>
+                    <button type="submit" class="submit-button">Confirmar Reserva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Panel de Administración -->
+    <div id="adminPanel" style="display: none;">
+        <div class="admin-header">
+            <h2>Panel de Administración</h2>
+            <button onclick="logoutAdmin()">Cerrar Sesión</button>
+        </div>
+
+        <!-- Dashboard de Estadísticas -->
+        <div class="dashboard">
+            <div class="stat-card">
+                <h3 id="statHoy">0</h3>
+                <p>Hoy</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statPendientes">0</h3>
+                <p>Pendientes</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statConfirmadas">0</h3>
+                <p>Confirmadas</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statIngresos">Bs. 0</h3>
+                <p>Ingresos Proyectados</p>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <button onclick="filterReservas('PENDIENTE')" class="filter-btn active">Pendientes</button>
+            <button onclick="filterReservas('CONFIRMADA')">Confirmadas</button>
+            <button onclick="filterReservas('RECHAZADA')">Rechazadas</button>
+            <button onclick="filterReservas('TODAS')">Todas</button>
+        </div>
+
+        <!-- Tabla de Reservas -->
+        <div class="reservas-table">
+            <table id="adminReservasTable">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Teléfono</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Servicio</th>
+                        <th>Profesional</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="adminReservasBody">
+                    <tr>
+                        <td colspan="8" style="text-align: center;">Cargando reservas...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div id="confirmacionModal" class="modal">
+        <div class="modal-content confirmacion-content">
+            <span class="close" onclick="closeConfirmacion()">&times;</span>
+            <div class="confirmacion-icon">✅</div>
+            <h2>¡Reserva Registrada!</h2>
+            <p>Tu reserva ha sido registrada exitosamente y está <strong>pendiente de confirmación</strong>.</p>
+            <div id="confirmacionDetalles" class="confirmacion-detalles"></div>
+            <p class="confirmacion-nota">Recibirás un mensaje de WhatsApp cuando tu reserva sea confirmada.</p>
+            <button onclick="closeConfirmacion()" class="cta-button">Entendido</button>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="loader" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
