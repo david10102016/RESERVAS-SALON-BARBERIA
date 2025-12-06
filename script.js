@@ -1,6 +1,6 @@
 // ========== CONFIGURACIÓN ==========
 // IMPORTANTE: Reemplaza esta URL con la URL de tu Web App de Google Apps Script
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnTqGFL98zRbjwFD41QemVO20A9r_nsWpZ9PMkY_kahi_q1FdJW2yawd_61IPq6799mg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxru1hqaBbSs3u-MkangwHy2QTjuZC9AQE6-6TrufedVBrw2BzeUsfL_uvacNgyylZZVA/exec';
 // Variables globales
 let currentDate = new Date();
 let selectedDate = null;
