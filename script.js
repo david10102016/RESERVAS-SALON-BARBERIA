@@ -75,14 +75,16 @@ async function loginAdmin(event) {
     showLoader();
     
     try {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify({
+            action: 'login',
+            username: user,
+            password: pass
+        }));
+        
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'login',
-                username: user,
-                password: pass
-            })
+            body: formData
         });
         
         const result = await response.json();
@@ -332,10 +334,12 @@ async function submitReserva(event) {
     showLoader();
     
     try {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(reserva));
+        
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reserva)
+            body: formData
         });
         
         const result = await response.json();
@@ -441,7 +445,7 @@ function renderReservasTable() {
             <td>${new Date(reserva.fecha).toLocaleDateString('es-ES')}</td>
             <td>${reserva.hora}</td>
             <td>${reserva.servicio}</td>
-            <td>${reserva.profesionalNombre}</td>
+            <td>${reserva.profesionalnombre}</td>
             <td><span class="estado-badge ${estadoClass}">${reserva.estado}</span></td>
             <td>${acciones}</td>
         `;
@@ -474,14 +478,16 @@ function rechazarReserva(index) {
 
 async function updateReservaEstado(id, estado) {
     try {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify({
+            action: 'updateEstado',
+            id: id,
+            estado: estado
+        }));
+        
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'updateEstado',
-                id: id,
-                estado: estado
-            })
+            body: formData
         });
         
         const result = await response.json();
