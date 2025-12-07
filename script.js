@@ -1,7 +1,6 @@
 // ========== CONFIGURACIÓN ==========
-// IMPORTANTE: Reemplaza esta URL con la URL de tu Web App de Google Apps Script
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxru1hqaBbSs3u-MkangwHy2QTjuZC9AQE6-6TrufedVBrw2BzeUsfL_uvacNgyylZZVA/exec';
-// Variables globales
+
 let currentDate = new Date();
 let selectedDate = null;
 let reservasData = [];
@@ -75,16 +74,14 @@ async function loginAdmin(event) {
     showLoader();
     
     try {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify({
-            action: 'login',
-            username: user,
-            password: pass
-        }));
+        const params = new URLSearchParams();
+        params.append('action', 'login');
+        params.append('username', user);
+        params.append('password', pass);
         
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            body: formData
+            body: params
         });
         
         const result = await response.json();
@@ -122,7 +119,6 @@ function renderCalendar() {
     const calendar = document.getElementById('calendar');
     calendar.innerHTML = '';
     
-    // Headers días de la semana
     const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     dias.forEach(dia => {
         const header = document.createElement('div');
@@ -131,17 +127,14 @@ function renderCalendar() {
         calendar.appendChild(header);
     });
     
-    // Primer día del mes
     const firstDay = new Date(year, month, 1).getDay();
     
-    // Días del mes anterior (espacios vacíos)
     for (let i = 0; i < firstDay; i++) {
         const emptyDay = document.createElement('div');
         emptyDay.className = 'calendar-day';
         calendar.appendChild(emptyDay);
     }
     
-    // Días del mes actual
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -154,14 +147,12 @@ function renderCalendar() {
         const dayDate = new Date(year, month, day);
         dayDate.setHours(0, 0, 0, 0);
         
-        // Deshabilitar días pasados
         if (dayDate < today) {
             dayElement.classList.add('disabled');
         } else {
             dayElement.onclick = () => selectDate(year, month, day);
         }
         
-        // Marcar fecha seleccionada
         if (selectedDate && 
             selectedDate.getFullYear() === year && 
             selectedDate.getMonth() === month && 
@@ -232,7 +223,6 @@ async function updateHorarios() {
         const container = document.getElementById('horariosDisponibles');
         container.innerHTML = '';
         
-        // Generar horarios de 8:00 a 18:30 cada 30 minutos
         const horarios = [];
         for (let h = 8; h < 19; h++) {
             horarios.push(`${h.toString().padStart(2, '0')}:00`);
@@ -246,7 +236,6 @@ async function updateHorarios() {
             slot.className = 'horario-slot';
             slot.textContent = horario;
             
-            // Verificar si está ocupado
             const ocupado = result.horariosOcupados && result.horariosOcupados.includes(horario);
             
             if (ocupado) {
@@ -265,12 +254,10 @@ async function updateHorarios() {
 }
 
 function selectHorario(horario) {
-    // Quitar selección previa
     document.querySelectorAll('.horario-slot').forEach(slot => {
         slot.classList.remove('selected');
     });
     
-    // Seleccionar nuevo horario
     event.target.classList.add('selected');
     document.getElementById('horarioSeleccionado').value = horario;
     
@@ -314,37 +301,40 @@ async function submitReserva(event) {
     const email = document.getElementById('emailCliente').value;
     const notas = document.getElementById('notasCliente').value;
     
-    const reserva = {
-        action: 'crearReserva',
-        fecha: fechaStr,
-        hora: horario,
-        tipoServicio: document.getElementById('tipoServicio').value,
-        servicio: servicio.nombre,
-        precio: servicio.precio,
-        duracion: servicio.duracion,
-        profesional: profesional,
-        profesionalNombre: document.getElementById('profesional').selectedOptions[0].text,
-        cliente: nombre,
-        telefono: telefono,
-        email: email,
-        notas: notas,
-        estado: 'PENDIENTE'
-    };
-    
     showLoader();
     
     try {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(reserva));
+        const params = new URLSearchParams();
+        params.append('action', 'crearReserva');
+        params.append('fecha', fechaStr);
+        params.append('hora', horario);
+        params.append('tipoServicio', document.getElementById('tipoServicio').value);
+        params.append('servicio', servicio.nombre);
+        params.append('precio', servicio.precio);
+        params.append('duracion', servicio.duracion);
+        params.append('profesional', profesional);
+        params.append('profesionalNombre', document.getElementById('profesional').selectedOptions[0].text);
+        params.append('cliente', nombre);
+        params.append('telefono', telefono);
+        params.append('email', email);
+        params.append('notas', notas);
+        params.append('estado', 'PENDIENTE');
         
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            body: formData
+            body: params
         });
         
         const result = await response.json();
         
         if (result.success) {
+            const reserva = {
+                fecha: fechaStr,
+                hora: horario,
+                servicio: servicio.nombre,
+                profesionalNombre: document.getElementById('profesional').selectedOptions[0].text,
+                cliente: nombre
+            };
             mostrarConfirmacion(reserva);
             document.getElementById('reservaForm').reset();
             selectedDate = null;
@@ -401,7 +391,6 @@ async function loadAdminReservas() {
 function filterReservas(estado) {
     currentFilter = estado;
     
-    // Actualizar botones activos
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -478,16 +467,14 @@ function rechazarReserva(index) {
 
 async function updateReservaEstado(id, estado) {
     try {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify({
-            action: 'updateEstado',
-            id: id,
-            estado: estado
-        }));
+        const params = new URLSearchParams();
+        params.append('action', 'updateEstado');
+        params.append('id', id);
+        params.append('estado', estado);
         
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            body: formData
+            body: params
         });
         
         const result = await response.json();
