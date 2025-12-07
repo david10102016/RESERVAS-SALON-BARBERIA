@@ -74,17 +74,15 @@ async function loginAdmin(event) {
     showLoader();
     
     try {
-        const params = new URLSearchParams();
-        params.append('action', 'login');
-        params.append('username', user);
-        params.append('password', pass);
-        
         const response = await fetch(SCRIPT_URL, {
+            redirect: 'follow',
             method: 'POST',
-            body: params
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`
         });
         
-        const result = await response.json();
+        const text = await response.text();
+        const result = JSON.parse(text);
         
         if (result.success) {
             closeAdminLogin();
@@ -217,8 +215,11 @@ async function updateHorarios() {
     try {
         const fechaStr = selectedDate.toISOString().split('T')[0];
         
-        const response = await fetch(`${SCRIPT_URL}?action=getHorariosDisponibles&fecha=${fechaStr}&profesional=${profesional}`);
-        const result = await response.json();
+        const response = await fetch(`${SCRIPT_URL}?action=getHorariosDisponibles&fecha=${fechaStr}&profesional=${profesional}`, {
+            redirect: 'follow'
+        });
+        const text = await response.text();
+        const result = JSON.parse(text);
         
         const container = document.getElementById('horariosDisponibles');
         container.innerHTML = '';
@@ -301,31 +302,40 @@ async function submitReserva(event) {
     const email = document.getElementById('emailCliente').value;
     const notas = document.getElementById('notasCliente').value;
     
+    const reservaData = {
+        action: 'crearReserva',
+        fecha: fechaStr,
+        hora: horario,
+        tipoServicio: document.getElementById('tipoServicio').value,
+        servicio: servicio.nombre,
+        precio: servicio.precio,
+        duracion: servicio.duracion,
+        profesional: profesional,
+        profesionalNombre: document.getElementById('profesional').selectedOptions[0].text,
+        cliente: nombre,
+        telefono: telefono,
+        email: email,
+        notas: notas,
+        estado: 'PENDIENTE'
+    };
+    
     showLoader();
     
     try {
-        const params = new URLSearchParams();
-        params.append('action', 'crearReserva');
-        params.append('fecha', fechaStr);
-        params.append('hora', horario);
-        params.append('tipoServicio', document.getElementById('tipoServicio').value);
-        params.append('servicio', servicio.nombre);
-        params.append('precio', servicio.precio);
-        params.append('duracion', servicio.duracion);
-        params.append('profesional', profesional);
-        params.append('profesionalNombre', document.getElementById('profesional').selectedOptions[0].text);
-        params.append('cliente', nombre);
-        params.append('telefono', telefono);
-        params.append('email', email);
-        params.append('notas', notas);
-        params.append('estado', 'PENDIENTE');
+        const formData = new URLSearchParams();
+        for (const key in reservaData) {
+            formData.append(key, reservaData[key]);
+        }
         
         const response = await fetch(SCRIPT_URL, {
+            redirect: 'follow',
             method: 'POST',
-            body: params
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
         });
         
-        const result = await response.json();
+        const text = await response.text();
+        const result = JSON.parse(text);
         
         if (result.success) {
             const reserva = {
@@ -344,7 +354,7 @@ async function submitReserva(event) {
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión. Verifica tu internet.');
+        alert('Error al crear la reserva. Intenta nuevamente.');
     } finally {
         hideLoader();
     }
@@ -374,8 +384,11 @@ async function loadAdminReservas() {
     showLoader();
     
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=getReservas`);
-        const result = await response.json();
+        const response = await fetch(`${SCRIPT_URL}?action=getReservas`, {
+            redirect: 'follow'
+        });
+        const text = await response.text();
+        const result = JSON.parse(text);
         
         if (result.success) {
             reservasData = result.reservas;
@@ -430,11 +443,11 @@ function renderReservasTable() {
         
         tr.innerHTML = `
             <td>${reserva.cliente}</td>
-            <td>${reserva.telefono}</td>
+            <td>${reserva.teléfono || reserva.telefono}</td>
             <td>${new Date(reserva.fecha).toLocaleDateString('es-ES')}</td>
             <td>${reserva.hora}</td>
             <td>${reserva.servicio}</td>
-            <td>${reserva.profesionalnombre}</td>
+            <td>${reserva.profesionalnombre || reserva['profesional nombre'] || ''}</td>
             <td><span class="estado-badge ${estadoClass}">${reserva.estado}</span></td>
             <td>${acciones}</td>
         `;
@@ -448,7 +461,8 @@ function aceptarReserva(index) {
     
     const mensaje = `¡Hola ${reserva.cliente}! ✅ Tu reserva ha sido CONFIRMADA para el ${new Date(reserva.fecha).toLocaleDateString('es-ES')} a las ${reserva.hora}. Servicio: ${reserva.servicio}. ¡Te esperamos!`;
     
-    const url = `https://wa.me/591${reserva.telefono}?text=${encodeURIComponent(mensaje)}`;
+    const telefono = reserva.teléfono || reserva.telefono;
+    const url = `https://wa.me/591${telefono}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
     
     updateReservaEstado(reserva.id, 'CONFIRMADA');
@@ -459,7 +473,8 @@ function rechazarReserva(index) {
     
     const mensaje = `Hola ${reserva.cliente}, lamentablemente no pudimos confirmar tu reserva para el ${new Date(reserva.fecha).toLocaleDateString('es-ES')} a las ${reserva.hora}. ¿Te gustaría agendar otro horario?`;
     
-    const url = `https://wa.me/591${reserva.telefono}?text=${encodeURIComponent(mensaje)}`;
+    const telefono = reserva.teléfono || reserva.telefono;
+    const url = `https://wa.me/591${telefono}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
     
     updateReservaEstado(reserva.id, 'RECHAZADA');
@@ -467,17 +482,15 @@ function rechazarReserva(index) {
 
 async function updateReservaEstado(id, estado) {
     try {
-        const params = new URLSearchParams();
-        params.append('action', 'updateEstado');
-        params.append('id', id);
-        params.append('estado', estado);
-        
         const response = await fetch(SCRIPT_URL, {
+            redirect: 'follow',
             method: 'POST',
-            body: params
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=updateEstado&id=${encodeURIComponent(id)}&estado=${encodeURIComponent(estado)}`
         });
         
-        const result = await response.json();
+        const text = await response.text();
+        const result = JSON.parse(text);
         
         if (result.success) {
             loadAdminReservas();
