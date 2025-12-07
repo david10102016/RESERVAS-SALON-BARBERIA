@@ -1,6 +1,6 @@
 // ========== CONFIGURACIÓN ==========
 // IMPORTANTE: Reemplaza esta URL con la URL de tu Web App de Google Apps Script
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxru1hqaBbSs3u-MkangwHy2QTjuZC9AQE6-6TrufedVBrw2BzeUsfL_uvacNgyylZZVA/exec';
+const SCRIPT_URL = 'https://corsproxy.io/?' + encodeURIComponent('https://script.google.com/macros/s/AKfycbxru1hqaBbSs3u-MkangwHy2QTjuZC9AQE6-6TrufedVBrw2BzeUsfL_uvacNgyylZZVA/exec');
 // Variables globales
 let currentDate = new Date();
 let selectedDate = null;
