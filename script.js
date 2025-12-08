@@ -1,5 +1,5 @@
 // ========== CONFIGURACIÓN ==========
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxru1hqaBbSs3u-MkangwHy2QTjuZC9AQE6-6TrufedVBrw2BzeUsfL_uvacNgyylZZVA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtNq_BqLnIzTvYNNN8Ao5YbrXa0AlhvbZfj_JsOB_GOkQCIiLyAVxO140bUWHRx34xZQ/exec;
 
 let currentDate = new Date();
 let selectedDate = null;
